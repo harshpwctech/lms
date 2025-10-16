@@ -102,6 +102,7 @@ import {
 	Badge,
 	Tooltip,
 	usePageMeta,
+	call,
 } from 'frappe-ui'
 import { computed, inject, watch } from 'vue'
 import { Users, Star } from 'lucide-vue-next'
@@ -143,10 +144,11 @@ watch(
 	}
 )
 
-watch(course, () => {
+watch(course, async () => {
+	const enrolled = await isEnrolled()
 	if (
 		!isInstructor() &&
-		!isEnrolled() &&
+		!enrolled &&
 		!user.data?.is_moderator &&
 		!course.data?.published &&
 		!course.data?.upcoming
@@ -167,20 +169,17 @@ const isInstructor = () => {
 	return user_is_instructor
 }
 
-const isEnrolled = () => {
-	let user_is_enrolled = false
-	createResource({
+const isEnrolled = async () => {
+	if (!user.data?.name) return false
+	const data = await call('frappe.client.get_value', {
 		doctype: 'LMS Enrollment',
 		filters: {
-			member: user.data?.name
+			member: user.data?.name,
+			course: props.courseName,
 		},
-		onSuccess(data){
-			if (data) {
-				user_is_enrolled = true
-			}
-		}
+		fieldname: 'name',
 	})
-	return user_is_enrolled
+	return !!data.name
 }
 
 const breadcrumbs = computed(() => {
