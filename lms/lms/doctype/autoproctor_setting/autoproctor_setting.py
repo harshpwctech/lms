@@ -15,6 +15,8 @@ class AutoProctorSetting(Document):
 @frappe.whitelist()
 def get_autoproctor_credentials():
 	autoproctor_setting = frappe.get_cached_doc("AutoProctor Setting")
+	if not autoproctor_setting.enabled:
+		return
 	test_attempt_id = frappe.generate_hash(length=10)
 	client_secret = autoproctor_setting.get_password("client_secret")
 	payload = hmac.new(client_secret.encode('utf-8') , test_attempt_id.encode('utf-8'), sha256)

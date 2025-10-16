@@ -85,7 +85,7 @@
 			<div class="text-lg text-ink-gray-9 font-semibold mb-4">
 				{{ __('Settings') }}
 			</div>
-			<div class="grid grid-cols-3 gap-5">
+			<div class="grid grid-cols-4 gap-5">
 				<div class="flex flex-col space-y-10">
 					<FormControl
 						v-model="quizDetails.doc.show_answers"
@@ -96,11 +96,6 @@
 						v-model="quizDetails.doc.show_submission_history"
 						type="checkbox"
 						:label="__('Show Submission History')"
-					/>
-					<FormControl
-						v-model="quizDetails.doc.enable_proctoring"
-						type="checkbox"
-						:label="__('Enable Proctoring')"
 					/>
 				</div>
 				<div class="flex flex-col space-y-5">
@@ -125,6 +120,19 @@
 						v-if="quizDetails.doc.enable_negative_marking"
 						v-model="quizDetails.doc.marks_to_cut"
 						:label="__('Marks to Deduct')"
+					/>
+				</div>
+				<div class="flex flex-col space-y-5">
+					<FormControl
+						v-model="quizDetails.doc.enable_proctoring"
+						type="checkbox"
+						:label="__('Enable Proctoring')"
+					/>
+					<FormControl
+						v-if="quizDetails.doc.enable_proctoring"
+						v-model="quizDetails.doc.record_proctoring"
+						type="checkbox"
+						:label="__('Record Proctoring')"
 					/>
 				</div>
 			</div>

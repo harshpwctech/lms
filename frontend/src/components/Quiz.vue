@@ -355,9 +355,13 @@ const proctoringOptions = {
 		detectMultipleScreens: true,
 		forceFullScreen: false,
 		auxiliaryDevice: false,
-		recordSession: true
+		recordSession: false,
 	},
 	showHowToVideo: false,
+	informUser: {
+		testAdmin: true,
+		testTaker: true
+	}
 };
 
 const props = defineProps({
@@ -393,6 +397,9 @@ const quiz = createResource({
 		setupTimer()
 		const canAttempt = !data.max_attempts || attempts.data?.length < data.max_attempts
 		if (canAttempt && data.enable_proctoring) {
+			if (data.record_proctoring) {
+				proctoringOptions.trackingOptions.recordSession = true
+			}
 			await initProctoring()
 		}
 	},
@@ -404,17 +411,19 @@ const initProctoring = async () => {
 		url: 'lms.lms.doctype.autoproctor_setting.autoproctor_setting.get_autoproctor_credentials',
 		auto: true,
 		async onSuccess(data) {
-			autoProctorTestId.value = data.testAttemptId
-			if (!window.AutoProctor) {
-				console.error("AutoProctor not available after script load")
-				return
+			if (data.testAttemptId){
+				autoProctorTestId.value = data.testAttemptId
+				if (!window.AutoProctor) {
+					console.error("AutoProctor not available after script load")
+					return
+				}
+				apInstance = new AutoProctor(data);
+				await apInstance.setup(proctoringOptions);
+				apInstance.start();
+				window.addEventListener("apMonitoringStarted", () => {
+					isProctoringReady.value = true
+				})
 			}
-			apInstance = new AutoProctor(data);
-			await apInstance.setup(proctoringOptions);
-			apInstance.start();
-			window.addEventListener("apMonitoringStarted", () => {
-				isProctoringReady.value = true
-            })
 		},
 	})
 }

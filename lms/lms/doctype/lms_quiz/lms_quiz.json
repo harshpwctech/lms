@@ -12,6 +12,7 @@
   "show_answers",
   "show_submission_history",
   "enable_proctoring",
+  "record_proctoring",
   "column_break_gaac",
   "total_marks",
   "passing_percentage",
@@ -156,6 +157,13 @@
    "fieldname": "enable_proctoring",
    "fieldtype": "Check",
    "label": "Enable Proctoring"
+  },
+  {
+   "default": "0",
+   "depends_on": "enable_proctoring",
+   "fieldname": "record_proctoring",
+   "fieldtype": "Check",
+   "label": "Record Proctoring"
   }
  ],
  "grid_page_length": 50,
@@ -166,7 +174,7 @@
    "link_fieldname": "quiz"
   }
  ],
- "modified": "2025-10-10 12:49:23.463133",
+ "modified": "2025-10-16 14:39:08.206905",
  "modified_by": "Administrator",
  "module": "LMS",
  "name": "LMS Quiz",
