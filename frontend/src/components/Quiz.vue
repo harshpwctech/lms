@@ -73,6 +73,9 @@
 				<div class="font-semibold text-lg text-ink-gray-9">
 					{{ quiz.data.title }}
 				</div>
+				<div v-if="!isProctoringReady"class="mt-4">
+					{{ __('Initiating Proctoring...') }}
+				</div>
 				<div class="flex items-center justify-center space-x-2 mt-4">
 					<Button
 						v-if="
