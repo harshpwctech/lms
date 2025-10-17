@@ -406,26 +406,69 @@ const quiz = createResource({
 })
 
 const initProctoring = async () => {
-	createResource({
-		url: 'lms.lms.doctype.autoproctor_setting.autoproctor_setting.get_autoproctor_credentials',
-		auto: true,
-		async onSuccess(data) {
-			if (data.testAttemptId){
-				autoProctorTestId.value = data.testAttemptId
-				if (!window.AutoProctor) {
-					console.error("AutoProctor not available after script load")
-					return
+	try {
+		await loadAutoProctor();
+		const credentials = await createResource({
+			url: 'lms.lms.doctype.autoproctor_setting.autoproctor_setting.get_autoproctor_credentials',
+			auto: true,
+		});
+
+		const data = credentials.data;
+		if (!data?.testAttemptId) return;
+
+		autoProctorTestId.value = data.testAttemptId;
+
+		apInstance = new AutoProctor(data);
+		await apInstance.setup(proctoringOptions);
+		apInstance.start();
+		window.addEventListener("apMonitoringStarted", () => {
+			isProctoringReady.value = true;
+		});
+	} catch (err) {
+		console.error("Failed to initialize proctoring:", err);
+	}
+};
+
+const loadAutoProctor = () => {
+	return new Promise((resolve, reject) => {
+		if (window.AutoProctor) return resolve(window.AutoProctor);
+
+		const existing = document.getElementById('autoproctor-script');
+		if (existing) {
+			// Poll until AutoProctor is available
+			const check = setInterval(() => {
+				if (window.AutoProctor) {
+					clearInterval(check);
+					resolve(window.AutoProctor);
 				}
-				apInstance = new AutoProctor(data);
-				await apInstance.setup(proctoringOptions);
-				apInstance.start();
-				window.addEventListener("apMonitoringStarted", () => {
-					isProctoringReady.value = true
-				})
-			}
-		},
-	})
-}
+			}, 100);
+			setTimeout(() => {
+				clearInterval(check);
+				if (!window.AutoProctor) reject(new Error("AutoProctor not available after load"));
+			}, 5000);
+			return;
+		}
+
+		const script = document.createElement('script');
+		script.id = 'autoproctor-script';
+		script.src = 'https://cdn.autoproctor.co/ap-entry.js';
+		script.async = true;
+		script.onload = () => {
+			const check = setInterval(() => {
+				if (window.AutoProctor) {
+					clearInterval(check);
+					resolve(window.AutoProctor);
+				}
+			}, 100);
+			setTimeout(() => {
+				clearInterval(check);
+				if (!window.AutoProctor) reject(new Error("AutoProctor not available after load"));
+			}, 5000);
+		};
+		script.onerror = () => reject(new Error("Failed to load AutoProctor"));
+		document.body.appendChild(script);
+	});
+};
 
 const populateQuestions = () => {
 	let data = quiz.data
@@ -516,56 +559,8 @@ watch(
 			attempts.reload()
 			resetQuiz()
 		}
-		if (quiz.data.enable_proctoring) {
-			try {
-				await loadAutoProctor();
-			} catch (err) {
-				console.error("Failed to load AutoProctor:", err);
-			}
-		}
 	}
 )
-
-const loadAutoProctor = () => {
-	return new Promise((resolve, reject) => {
-		if (window.AutoProctor) return resolve(window.AutoProctor);
-
-		const existing = document.getElementById('autoproctor-script');
-		if (existing) {
-			// Poll until AutoProctor is available
-			const check = setInterval(() => {
-				if (window.AutoProctor) {
-					clearInterval(check);
-					resolve(window.AutoProctor);
-				}
-			}, 100);
-			setTimeout(() => {
-				clearInterval(check);
-				if (!window.AutoProctor) reject(new Error("AutoProctor not available after load"));
-			}, 5000);
-			return;
-		}
-
-		const script = document.createElement('script');
-		script.id = 'autoproctor-script';
-		script.src = 'https://cdn.autoproctor.co/ap-entry.js';
-		script.async = true;
-		script.onload = () => {
-			const check = setInterval(() => {
-				if (window.AutoProctor) {
-					clearInterval(check);
-					resolve(window.AutoProctor);
-				}
-			}, 100);
-			setTimeout(() => {
-				clearInterval(check);
-				if (!window.AutoProctor) reject(new Error("AutoProctor not available after load"));
-			}, 5000);
-		};
-		script.onerror = () => reject(new Error("Failed to load AutoProctor"));
-		document.body.appendChild(script);
-	});
-};
 
 
 const quizSubmission = createResource({
