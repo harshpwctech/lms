@@ -73,7 +73,14 @@
 				<div class="font-semibold text-lg text-ink-gray-9">
 					{{ quiz.data.title }}
 				</div>
-				<div v-if="!isProctoringReady"class="mt-4">
+				<div v-if="
+						quiz.data.enable_proctoring && 
+						!isProctoringReady &&
+						!quiz.data.max_attempts &&
+						attempts.data?.length < quiz.data.max_attempts
+					"
+					class="mt-4"
+				>
 					{{ __('Initiating Proctoring...') }}
 				</div>
 				<div class="flex items-center justify-center space-x-2 mt-4">
@@ -398,6 +405,7 @@ const quiz = createResource({
 	async onSuccess(data) {
 		populateQuestions()
 		setupTimer()
+		await attempts.reload()
 		const canAttempt = !data.max_attempts || !attempts.data || attempts.data?.length < data.max_attempts;
 		if (canAttempt && data.enable_proctoring) {
 			if (data.record_proctoring) {
@@ -559,12 +567,12 @@ const attempts = createResource({
 
 watch(
 	() => quiz.data,
-	async () => {
+	() => {
 		if (quiz.data) {
 			populateQuestions()
 		}
 		if (quiz.data && quiz.data.max_attempts) {
-			await attempts.reload()
+			attempts.reload()
 			resetQuiz()
 		}
 	}
