@@ -76,7 +76,7 @@
 				<div v-if="
 						quiz.data.enable_proctoring && 
 						!isProctoringReady &&
-						!quiz.data.max_attempts &&
+						quiz.data.max_attempts &&
 						attempts.data?.length < quiz.data.max_attempts
 					"
 					class="mt-4"
