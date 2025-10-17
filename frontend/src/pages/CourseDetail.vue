@@ -102,7 +102,6 @@ import {
 	Badge,
 	Tooltip,
 	usePageMeta,
-	call,
 } from 'frappe-ui'
 import { computed, inject, watch } from 'vue'
 import { Users, Star } from 'lucide-vue-next'
@@ -144,7 +143,7 @@ watch(
 	}
 )
 
-watch(course, async () => {
+watch(course, () => {
 	if (
 		!isInstructor() &&
 		!course.data?.membership &&
@@ -156,7 +155,7 @@ watch(course, async () => {
 			name: 'Courses',
 		})
 	}
-})
+})	
 
 const isInstructor = () => {
 	let user_is_instructor = false
