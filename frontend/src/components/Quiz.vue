@@ -406,7 +406,6 @@ const quiz = createResource({
 })
 
 const initProctoring = async () => {
-	await loadAutoProctorScript()
 	createResource({
 		url: 'lms.lms.doctype.autoproctor_setting.autoproctor_setting.get_autoproctor_credentials',
 		auto: true,
@@ -427,49 +426,6 @@ const initProctoring = async () => {
 		},
 	})
 }
-
-const loadAutoProctorScript = () => {
-	return new Promise((resolve, reject) => {
-		if (window.AutoProctor) {
-			resolve(window.AutoProctor);
-			return;
-		}
-		let existingScript = document.getElementById('autoproctor-script');
-		if (existingScript) {
-			if (existingScript.dataset.loaded === "true") {
-				resolve(window.AutoProctor);
-				return;
-			}
-			existingScript.addEventListener('load', () => {
-				resolve(window.AutoProctor);
-			});
-			existingScript.addEventListener('error', reject);
-			return;
-		}
-
-		const script = document.createElement('script');
-		script.id = 'autoproctor-script';
-		script.src = 'https://cdn.autoproctor.co/ap-entry.js';
-		script.async = true;
-
-		script.onload = () => {
-			script.dataset.loaded = "true";
-			const checkInterval = setInterval(() => {
-				if (window.AutoProctor) {
-					clearInterval(checkInterval);
-					resolve(window.AutoProctor);
-				}
-			}, 100);
-			setTimeout(() => {
-				clearInterval(checkInterval);
-				if (!window.AutoProctor) reject(new Error("AutoProctor not available after load"));
-			}, 10000);
-		};
-
-		script.onerror = () => reject(new Error('Failed to load AutoProctor'));
-		document.body.appendChild(script);
-	});
-};
 
 const populateQuestions = () => {
 	let data = quiz.data
@@ -552,7 +508,7 @@ const attempts = createResource({
 
 watch(
 	() => quiz.data,
-	() => {
+	async () => {
 		if (quiz.data) {
 			populateQuestions()
 		}
@@ -560,8 +516,57 @@ watch(
 			attempts.reload()
 			resetQuiz()
 		}
+		if (quiz.data.enable_proctoring) {
+			try {
+				await loadAutoProctor();
+			} catch (err) {
+				console.error("Failed to load AutoProctor:", err);
+			}
+		}
 	}
 )
+
+const loadAutoProctor = () => {
+	return new Promise((resolve, reject) => {
+		if (window.AutoProctor) return resolve(window.AutoProctor);
+
+		const existing = document.getElementById('autoproctor-script');
+		if (existing) {
+			// Poll until AutoProctor is available
+			const check = setInterval(() => {
+				if (window.AutoProctor) {
+					clearInterval(check);
+					resolve(window.AutoProctor);
+				}
+			}, 100);
+			setTimeout(() => {
+				clearInterval(check);
+				if (!window.AutoProctor) reject(new Error("AutoProctor not available after load"));
+			}, 5000);
+			return;
+		}
+
+		const script = document.createElement('script');
+		script.id = 'autoproctor-script';
+		script.src = 'https://cdn.autoproctor.co/ap-entry.js';
+		script.async = true;
+		script.onload = () => {
+			const check = setInterval(() => {
+				if (window.AutoProctor) {
+					clearInterval(check);
+					resolve(window.AutoProctor);
+				}
+			}, 100);
+			setTimeout(() => {
+				clearInterval(check);
+				if (!window.AutoProctor) reject(new Error("AutoProctor not available after load"));
+			}, 5000);
+		};
+		script.onerror = () => reject(new Error("Failed to load AutoProctor"));
+		document.body.appendChild(script);
+	});
+};
+
 
 const quizSubmission = createResource({
 	url: 'lms.lms.doctype.lms_quiz.lms_quiz.quiz_summary',
