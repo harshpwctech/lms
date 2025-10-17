@@ -145,10 +145,9 @@ watch(
 )
 
 watch(course, async () => {
-	const enrolled = await isEnrolled()
 	if (
 		!isInstructor() &&
-		!enrolled &&
+		!course.data?.membership &&
 		!user.data?.is_moderator &&
 		!course.data?.published &&
 		!course.data?.upcoming
@@ -167,19 +166,6 @@ const isInstructor = () => {
 		}
 	})
 	return user_is_instructor
-}
-
-const isEnrolled = async () => {
-	if (!user.data?.name) return false
-	const data = await call('frappe.client.get_value', {
-		doctype: 'LMS Enrollment',
-		filters: {
-			member: user.data?.name,
-			course: props.courseName,
-		},
-		fieldname: 'name',
-	})
-	return !!data.name
 }
 
 const breadcrumbs = computed(() => {
