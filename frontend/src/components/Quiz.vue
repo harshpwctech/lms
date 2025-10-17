@@ -408,21 +408,26 @@ const quiz = createResource({
 const initProctoring = async () => {
 	try {
 		await loadAutoProctor();
-		const credentials = await createResource({
+		createResource({
 			url: 'lms.lms.doctype.autoproctor_setting.autoproctor_setting.get_autoproctor_credentials',
 			auto: true,
-		});
-
-		const data = credentials.data;
-		if (!data?.testAttemptId) return;
-
-		autoProctorTestId.value = data.testAttemptId;
-
-		apInstance = new AutoProctor(data);
-		await apInstance.setup(proctoringOptions);
-		apInstance.start();
-		window.addEventListener("apMonitoringStarted", () => {
-			isProctoringReady.value = true;
+			onSuccess(data) {
+				if (!data?.testAttemptId) {
+					console.warn("No testAttemptId returned from AutoProctor API");
+					return;
+				}
+				autoProctorTestId.value = data.testAttemptId;
+				apInstance = new AutoProctor(data);
+				apInstance.setup(proctoringOptions).then(() => {
+					apInstance.start();
+					window.addEventListener("apMonitoringStarted", () => {
+						isProctoringReady.value = true;
+					});
+				});
+			},
+			onError(err) {
+				console.error("Failed to fetch AutoProctor credentials:", err);
+			},
 		});
 	} catch (err) {
 		console.error("Failed to initialize proctoring:", err);
