@@ -564,7 +564,7 @@ watch(
 			populateQuestions()
 		}
 		if (quiz.data && quiz.data.max_attempts) {
-			attempts.reload()
+			await attempts.reload()
 			resetQuiz()
 		}
 	}
