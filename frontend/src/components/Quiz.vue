@@ -406,73 +406,75 @@ const quiz = createResource({
 })
 
 const initProctoring = async () => {
-	try {
-		await loadAutoProctor();
-		createResource({
-			url: 'lms.lms.doctype.autoproctor_setting.autoproctor_setting.get_autoproctor_credentials',
-			auto: true,
-			onSuccess(data) {
-				if (!data?.testAttemptId) {
-					console.warn("No testAttemptId returned from AutoProctor API");
-					return;
-				}
-				autoProctorTestId.value = data.testAttemptId;
-				apInstance = new AutoProctor(data);
-				apInstance.setup(proctoringOptions).then(() => {
-					apInstance.start();
-					window.addEventListener("apMonitoringStarted", () => {
-						isProctoringReady.value = true;
-					});
-				});
-			},
-			onError(err) {
-				console.error("Failed to fetch AutoProctor credentials:", err);
-			},
-		});
-	} catch (err) {
-		console.error("Failed to initialize proctoring:", err);
-	}
+  try {
+    await loadAutoProctor();
+
+    createResource({
+      url: 'lms.lms.doctype.autoproctor_setting.autoproctor_setting.get_autoproctor_credentials',
+      auto: true,
+      onSuccess(data) {
+        if (!data?.testAttemptId) {
+          console.warn("No testAttemptId returned from AutoProctor API");
+          return;
+        }
+
+        autoProctorTestId.value = data.testAttemptId;
+        apInstance = new AutoProctor(data);
+
+        // Attach the event listener **before** calling setup/start
+        const onMonitoringStarted = () => {
+          isProctoringReady.value = true;
+          window.removeEventListener("apMonitoringStarted", onMonitoringStarted);
+        };
+        window.addEventListener("apMonitoringStarted", onMonitoringStarted);
+
+        apInstance.setup(proctoringOptions)
+          .then(() => apInstance.start())
+          .catch(err => console.error("Failed to start AutoProctor:", err));
+      },
+      onError(err) {
+        console.error("Failed to fetch AutoProctor credentials:", err);
+      },
+    });
+  } catch (err) {
+    console.error("Failed to initialize proctoring:", err);
+  }
 };
 
 const loadAutoProctor = () => {
-	return new Promise((resolve, reject) => {
-		if (window.AutoProctor) return resolve(window.AutoProctor);
+  return new Promise((resolve, reject) => {
+    if (window.AutoProctor) return resolve(window.AutoProctor);
 
-		const existing = document.getElementById('autoproctor-script');
-		if (existing) {
-			// Poll until AutoProctor is available
-			const check = setInterval(() => {
-				if (window.AutoProctor) {
-					clearInterval(check);
-					resolve(window.AutoProctor);
-				}
-			}, 100);
-			setTimeout(() => {
-				clearInterval(check);
-				if (!window.AutoProctor) reject(new Error("AutoProctor not available after load"));
-			}, 5000);
-			return;
-		}
+    let script = document.getElementById('autoproctor-script');
+    if (!script) {
+      script = document.createElement('script');
+      script.id = 'autoproctor-script';
+      script.src = 'https://cdn.autoproctor.co/ap-entry.js';
+      script.async = true;
+      document.body.appendChild(script);
+    }
 
-		const script = document.createElement('script');
-		script.id = 'autoproctor-script';
-		script.src = 'https://cdn.autoproctor.co/ap-entry.js';
-		script.async = true;
-		script.onload = () => {
-			const check = setInterval(() => {
-				if (window.AutoProctor) {
-					clearInterval(check);
-					resolve(window.AutoProctor);
-				}
-			}, 100);
-			setTimeout(() => {
-				clearInterval(check);
-				if (!window.AutoProctor) reject(new Error("AutoProctor not available after load"));
-			}, 5000);
-		};
-		script.onerror = () => reject(new Error("Failed to load AutoProctor"));
-		document.body.appendChild(script);
-	});
+    const waitForAutoProctor = () => {
+      const check = setInterval(() => {
+        if (window.AutoProctor) {
+          clearInterval(check);
+          resolve(window.AutoProctor);
+        }
+      }, 100);
+
+      setTimeout(() => {
+        clearInterval(check);
+        if (!window.AutoProctor) reject(new Error("AutoProctor not available after load"));
+      }, 10000); // 10s timeout
+    };
+
+    if (window.AutoProctor) {
+      resolve(window.AutoProctor);
+    } else {
+      script.onload = () => waitForAutoProctor();
+      script.onerror = () => reject(new Error("Failed to load AutoProctor"));
+    }
+  });
 };
 
 const populateQuestions = () => {
