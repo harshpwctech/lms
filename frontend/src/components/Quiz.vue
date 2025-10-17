@@ -398,7 +398,7 @@ const quiz = createResource({
 	async onSuccess(data) {
 		populateQuestions()
 		setupTimer()
-		const canAttempt = !data.max_attempts || !attempts.data || attempts.data.length < data.max_attempts;
+		const canAttempt = !data.max_attempts || !attempts.data || attempts.data?.length < data.max_attempts;
 		if (canAttempt && data.enable_proctoring) {
 			if (data.record_proctoring) {
 				proctoringOptions.trackingOptions.recordSession = true
