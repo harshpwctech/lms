@@ -10,7 +10,7 @@ from lms.lms.utils import get_course_progress
 
 class CourseChapter(Document):
 	def on_update(self):
-		self.recalculate_course_progress()
+		frappe.enqueue_doc(self.doctype, self.name, "recalculate_course_progress", timeout=600)
 		update_course_statistics()
 
 	def recalculate_course_progress(self):
