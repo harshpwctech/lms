@@ -246,7 +246,7 @@ def get_average_rating(course):
 
 
 @frappe.whitelist(allow_guest=True)
-@rate_limit(limit=50, seconds=60 * 60)
+@rate_limit(limit=100, seconds=60 * 60)
 def get_reviews(course):
 	reviews = frappe.get_all(
 		"LMS Course Review",
