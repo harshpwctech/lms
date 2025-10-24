@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
+import requests
 from frappe import _
 from frappe.desk.doctype.notification_log.notification_log import make_notification_logs
 from frappe.model.document import Document
@@ -73,3 +74,52 @@ class LMSQuizSubmission(Document):
 
 class MaximumAttemptsExceededError(frappe.DuplicateEntryError):
 	pass
+
+
+def update_proctoring_score():
+	proctored_quizzes = frappe.get_all(
+		"LMS Quiz Submission",
+		filters=[["LMS Quiz Submission","is_proctored","=",1],["LMS Quiz Submission","autoproctor_trust_percentage","=",0]],
+		fields=["name", "autoproctor_test_id"],
+	)
+	quiz_ids = []
+	for quiz in proctored_quizzes:
+		quiz_ids.append(quiz.autoproctor_test_id)
+	if len(quiz_ids):
+		proctoring_results = get_proctoring_result(quiz_ids)
+		update_results(proctored_quizzes, proctoring_results)
+	else:
+		return
+
+def get_proctoring_result(quiz_ids):
+	headers = {
+		"Authorization": "AP QjJ0dWFoaWk6U1RERUNGUWZxcWk3M20z",
+		"content-type": "application/json",
+	}
+	data = {
+		"tenantTestAttemptIds": quiz_ids
+	}
+
+	response = requests.post(
+		f"https://www.autoproctor.co/api/v1/test-results/", headers=headers, data=frappe.as_json(data)
+	)
+
+	if response.status_code != 200:
+		frappe.throw(
+			_("Failed to fetch AutoProctor results: {0}").format(
+				response.text
+			)
+		)
+
+	data = response.json()
+	return data.get("results", [])
+
+def update_results(proctored_quizzes, proctoring_results):
+	for result in proctoring_results:
+		autoproctor_test_id = result.get("tenantTestAttemptId")
+		trust_score = result.get("trustScore")
+		if trust_score == 0:
+			trust_score = 0.01
+		proctored_quiz = next((quiz.name for quiz in proctored_quizzes if quiz.autoproctor_test_id == autoproctor_test_id), None)
+		frappe.db.set_value("LMS Quiz Submission",proctored_quiz,"autoproctor_trust_percentage", trust_score*100)
+		frappe.db.commit()

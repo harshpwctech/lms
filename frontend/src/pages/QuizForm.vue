@@ -122,7 +122,7 @@
 						:label="__('Marks to Deduct')"
 					/>
 				</div>
-				<div class="flex flex-col space-y-5">
+				<div class="flex flex-col space-y-10">
 					<FormControl
 						v-model="quizDetails.doc.enable_proctoring"
 						type="checkbox"
