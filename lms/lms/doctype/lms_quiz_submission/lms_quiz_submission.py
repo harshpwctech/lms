@@ -121,5 +121,6 @@ def update_results(proctored_quizzes, proctoring_results):
 		if trust_score == 0:
 			trust_score = 0.01
 		proctored_quiz = next((quiz.name for quiz in proctored_quizzes if quiz.autoproctor_test_id == autoproctor_test_id), None)
-		frappe.db.set_value("LMS Quiz Submission",proctored_quiz,"autoproctor_trust_percentage", trust_score*100)
-		frappe.db.commit()
+		if trust_score:
+			frappe.db.set_value("LMS Quiz Submission",proctored_quiz,"autoproctor_trust_percentage", trust_score*100)
+			frappe.db.commit()
