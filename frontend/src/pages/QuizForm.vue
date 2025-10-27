@@ -78,6 +78,11 @@
 						:label="__('Passing Percentage')"
 						:required="true"
 					/>
+					<FormControl
+						type="datetime-local"
+						v-model="quizDetails.doc.due_date"
+						:label="__('Due Date')"
+					/>
 				</div>
 			</div>
 		</div>

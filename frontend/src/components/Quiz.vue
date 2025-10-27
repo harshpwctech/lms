@@ -87,7 +87,9 @@
 					<Button
 						v-if="
 							!quiz.data.max_attempts ||
-							attempts.data?.length < quiz.data.max_attempts
+							attempts.data?.length < quiz.data.max_attempts &&
+							(!quiz.data.due_date || new Date(quiz.data.due_date) > new Date())
+
 						"
 						variant="solid"
 						:disabled="quiz.data.enable_proctoring && !isProctoringReady"
@@ -111,6 +113,19 @@
 					{{
 						__(
 							'You have already exceeded the maximum number of attempts allowed for this quiz.'
+						)
+					}}
+				</div>
+				<div
+					v-else-if="
+						quiz.data.due_date && 
+						new Date(quiz.data.due_date) < new Date()
+					"
+					class="leading-5 text-ink-gray-7"
+				>
+					{{
+						__(
+							'The Due Date to Attempt this Quiz has Expired.'
 						)
 					}}
 				</div>

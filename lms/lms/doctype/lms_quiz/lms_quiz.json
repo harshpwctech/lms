@@ -17,6 +17,7 @@
   "total_marks",
   "passing_percentage",
   "duration",
+  "due_date",
   "section_break_tzbu",
   "shuffle_questions",
   "limit_questions_to",
@@ -164,6 +165,11 @@
    "fieldname": "record_proctoring",
    "fieldtype": "Check",
    "label": "Record Proctoring"
+  },
+  {
+   "fieldname": "due_date",
+   "fieldtype": "Datetime",
+   "label": "Due Date"
   }
  ],
  "grid_page_length": 50,
@@ -174,7 +180,7 @@
    "link_fieldname": "quiz"
   }
  ],
- "modified": "2025-10-16 14:39:08.206905",
+ "modified": "2025-10-27 16:38:57.362080",
  "modified_by": "Administrator",
  "module": "LMS",
  "name": "LMS Quiz",
