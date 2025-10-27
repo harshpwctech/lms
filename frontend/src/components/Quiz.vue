@@ -76,8 +76,8 @@
 				<div v-if="
 						quiz.data.enable_proctoring && 
 						!isProctoringReady &&
-						quiz.data.max_attempts &&
-						attempts.data?.length < quiz.data.max_attempts
+						(!quiz.data.max_attempts || attempts.data?.length < quiz.data.max_attempts) &&
+						(!quiz.data.due_date || new Date(quiz.data.due_date) > new Date())
 					"
 					class="mt-4"
 				>
@@ -421,7 +421,9 @@ const quiz = createResource({
 		populateQuestions()
 		setupTimer()
 		await attempts.reload()
-		const canAttempt = !data.max_attempts || !attempts.data || attempts.data?.length < data.max_attempts;
+		const canAttempt = 
+			(!data.max_attempts || !attempts.data || attempts.data?.length < data.max_attempts) &&
+			(!data.due_date || new Date(data.due_date) > new Date());
 		if (canAttempt && data.enable_proctoring) {
 			if (data.record_proctoring) {
 				proctoringOptions.trackingOptions.recordSession = true
