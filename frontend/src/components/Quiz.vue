@@ -86,8 +86,7 @@
 				<div class="flex items-center justify-center space-x-2 mt-4">
 					<Button
 						v-if="
-							!quiz.data.max_attempts ||
-							attempts.data?.length < quiz.data.max_attempts &&
+							(!quiz.data.max_attempts || attempts.data?.length < quiz.data.max_attempts) &&
 							(!quiz.data.due_date || new Date(quiz.data.due_date) > new Date())
 
 						"
