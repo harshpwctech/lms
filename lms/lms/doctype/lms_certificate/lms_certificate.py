@@ -40,7 +40,7 @@ class LMSCertificate(Document):
 		}
 
 		if custom_template:
-			email_template = get_email_template(custom_template, args)
+			email_template = get_email_template(custom_template, self)
 			subject = email_template.get("subject")
 			content = email_template.get("message")
 		frappe.sendmail(
