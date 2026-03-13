@@ -182,6 +182,7 @@ def get_lesson_icon(body, content):
 				"vimeo",
 				"cloudflareStream",
 				"bunnyStream",
+				"legacyBunnyStream",
 			]:
 				return "icon-youtube"
 
