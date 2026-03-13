@@ -1,5 +1,5 @@
 <template>
-	<div v-if="quiz.data">
+	<div v-if="quiz.data" @contextmenu.prevent @copy.prevent>
 		<div
 			class="bg-surface-blue-2 space-y-2 py-2 px-3 mb-4 rounded-md text-sm text-ink-blue-2 leading-5"
 		>

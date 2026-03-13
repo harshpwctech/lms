@@ -38,7 +38,7 @@
 					<BatchOverlay :batch="batch" />
 				</div>
 			</div>
-			<div v-if="batch.data.courses.length">
+			<!-- <div v-if="batch.data.courses.length">
 				<div class="flex items-center mt-10">
 					<div class="text-2xl font-semibold">
 						{{ __('Courses') }}
@@ -68,7 +68,7 @@
 						class="batch-description"
 					></div>
 				</div>
-			</div>
+			</div> -->
 		</div>
 	</div>
 </template>

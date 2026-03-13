@@ -265,10 +265,10 @@ const tabs = computed(() => {
 		icon: BookOpen,
 	})
 
-	batchTabs.push({
-		label: 'Classes',
-		icon: Laptop,
-	})
+	// batchTabs.push({
+	// 	label: 'Classes',
+	// 	icon: Laptop,
+	// })
 
 	if (user.data?.is_moderator) {
 		batchTabs.push({
@@ -277,15 +277,15 @@ const tabs = computed(() => {
 		})
 	}
 
-	batchTabs.push({
-		label: 'Announcements',
-		icon: Mail,
-	})
+	// batchTabs.push({
+	// 	label: 'Announcements',
+	// 	icon: Mail,
+	// })
 
-	batchTabs.push({
-		label: 'Discussions',
-		icon: MessageCircle,
-	})
+	// batchTabs.push({
+	// 	label: 'Discussions',
+	// 	icon: MessageCircle,
+	// })
 	return batchTabs
 })
 
