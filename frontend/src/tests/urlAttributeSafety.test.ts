@@ -86,7 +86,6 @@ const EXEMPT = new Map<string, string>([
 		'../components/Settings/EmailAccount/EmailProviderIcon.vue',
 		'logo comes from the services table in emailConfig.ts',
 	],
-	['../components/Settings/Raven/RavenSetupRow.vue', 'constant https literal'],
 	[
 		'../pages/ProfileCertificates.vue',
 		'template literal rooted at /api/method/',
